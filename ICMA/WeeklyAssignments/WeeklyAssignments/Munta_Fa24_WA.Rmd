@@ -1,0 +1,21 @@
+---
+title: "D2SC: Weekly Assignments"
+output: html_notebook
+author: "Ayush Munta"
+date: "2024-9-13"
+---
+# Inital Loading
+```{r}
+library(tidyverse)
+```
+# Week 1
+
+I went to http://google.com and looked up "how to load library in R". From there, I went to images, and found an example after looking a couple photos. I checked that it was working by typing in what I saw in a chunk, and then I ran the chunk of code. 
+
+```{r}
+?tidyverse
+```
+
+Description
+
+The 'tidyverse' is a set of packages that work in harmony because they share common data representations and 'API' design. This package is designed to make it easy to install and load multiple 'tidyverse' packages in a single step. Learn more about the 'tidyverse' at https://www.tidyverse.org.
