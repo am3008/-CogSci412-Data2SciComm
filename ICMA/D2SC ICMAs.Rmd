@@ -2,7 +2,7 @@
 title: "D2SC ICMAs"
 output: html_notebook
 author: "Ayush Munta"
-date: "'r Sys.Date()'"
+date: "`r Sys.Date()`"
 ---
 
 # ICMA Sept 9 2024
@@ -41,5 +41,45 @@ help(mean)
 
 ```{r}
 sd(1:2)^2
+```
+
+# ICMA Sept 16 2024
+```{r}
+library(tidyverse)
+```
+
+```{r}
+my_numbers <- c(1,2,3,4,5,6,7,8,9,10)
+```
+
+```{r}
+mean(my_numbers)
+```
+
+```{r}
+my_numbers %>% 
+  mean()
+```
+```{r}
+getwd()
+```
+```{r}
+help("mtcars")
+```
+```{r}
+mtcars
+```
+
+```{r}
+write_csv(mtcars, 
+          "mtcars_fromR")
+```
+```{r}
+mtcars%>%
+  rownames_to_column()%>%
+  write_csv("mtcars_fromR_rownames.csv")
+```
+```{r}
+mtcars_read <- read_csv("mtcars_fromR_rownames.csv")
 ```
 
