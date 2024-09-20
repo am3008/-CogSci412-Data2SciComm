@@ -82,4 +82,31 @@ mtcars%>%
 ```{r}
 mtcars_read <- read_csv("mtcars_fromR_rownames.csv")
 ```
+# ICMA Sept 18 2024
+```{r}
+glimpse(ChickWeight)
+```
+
+
+```{r}
+chick_clean <- ChickWeight %>% ## assigning to a new object "chick_clean"
+  select(chick_id = Chick, 
+         diet = Diet,
+         age_days = Time, 
+         weight_gm = weight)  ## renaming & re-ordering while keeping
+```
+
+```{r}
+summary_table <- ChickWeight %>%
+  filter(Time == 20) %>%
+  mutate(weight_lbs = weight / 453.6) %>%
+  group_by(Diet) %>%
+  summarise(
+    num_chicks = n_distinct(Chick),
+    avg_weight_grams = mean(weight),
+    avg_weight_pounds = mean(weight_lbs)
+  )
+
+
+```
 

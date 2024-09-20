@@ -2,7 +2,7 @@
 title: "D2SC: Weekly Assignments"
 output: html_notebook
 author: "Ayush Munta"
-date: "2024-9-13"
+date: "`r Sys.Date()`"
 ---
 # Inital Loading
 ```{r}
