@@ -2,7 +2,7 @@
 title: "D2SC: Weekly Assignments"
 output: html_notebook
 author: "Ayush Munta"
-date: "`r Sys.Date()`"
+date: "`r Sys.Date()`"  
 ---
 # Inital Loading
 ```{r}
@@ -19,3 +19,42 @@ I went to http://google.com and looked up "how to load library in R". From there
 Description
 
 The 'tidyverse' is a set of packages that work in harmony because they share common data representations and 'API' design. This package is designed to make it easy to install and load multiple 'tidyverse' packages in a single step. Learn more about the 'tidyverse' at https://www.tidyverse.org.
+
+# Assignment 2
+
+
+```{r}
+analogy_data <- read_csv("tidy_data/MFIndD_analogy.csv")
+
+```
+1. qualtrics_id has the unique identifier for each participant 
+
+```{r}
+num_rows <- analogy_data %>%
+  summarise(total_rows = n())
+
+num_columns <- analogy_data %>%
+  summarise(total_columns = ncol(analogy_data))
+
+num_rows
+num_columns
+```
+2A. There are 792 rows and 6 columns. These numbers are found by running the summarise() function from dplyr in conjunction with n() or ncol(). Furthermore, these also show up while running read_csv() from the readr package or simply using dim() which is a base R package
+
+```{r}
+num_people <- analogy_data %>%
+  distinct(qualtrics_id) %>%
+  count()
+
+num_people
+```
+2B. There are 99 people in this data set. This number is found by finding the distinct number of qualtrics_id's (which represent participants), and then using count() to count them.
+
+```{r}
+trial_counts <- analogy_data %>%
+  count(qualtrics_id) %>%                    
+  distinct(n)                           
+
+trial_counts
+```
+2C. Everyone from the data has the same number of trials. They each have 8 in this case. This is found by using count() to return the number of trials for each participant, and then using distinct to simply by seeing how many unique value there are. In this case, since it returned one value (8) that means everyone had the same amount of trials.
