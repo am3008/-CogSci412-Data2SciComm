@@ -144,4 +144,42 @@ billboard_sep %>%
            ) %>%
   select(full_date)
 ```
+# ICMA Sept 25 2024
+
+```{r}
+ChickWeight %>%
+  ggplot(aes(y = weight,
+             x = Time,
+             color = Diet)) +
+  geom_point(alpha = 0.5) + 
+  geom_smooth(se = FALSE) + 
+  theme_classic() + 
+  facet_grid(~Diet) + 
+  labs(y = "weight in grams",
+       x = "days since birth",
+       title = "Weight Over Time Across Diets")
+```
+
+```{r}
+#ggsave("chick_weightovertime.png",
+ #      width = 9,
+  #     height = 8)
+```
+
+```{r}
+ChickWeight %>%
+  ggplot(aes(y = weight,
+             x = Time,
+             color = Diet)) +
+  geom_boxplot(alpha = 0.5) + 
+  geom_smooth(se = TRUE) + 
+  theme_minimal() + 
+  
+  facet_grid(~Diet) + 
+  
+  labs(y = "weight in grams",
+       x = "days since birth",
+       title = "Weight Over Time Across Diets")
+```
+
 
