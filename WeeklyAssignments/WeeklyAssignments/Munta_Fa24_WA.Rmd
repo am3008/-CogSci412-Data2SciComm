@@ -83,6 +83,7 @@ ggplot(relational_summary, aes(x = relational_match_count)) +
    scale_x_continuous(breaks = seq(0, 8, by = 1)) +
   theme_minimal()
 ```
+It seems the extremes (0 and 8) are the most common relational matches, while 5 has none.
 ```{r}
 wide_data <- analogy_data %>%
   select(qualtrics_id, trial_number, response_type) %>%  
@@ -92,6 +93,7 @@ wide_data <- analogy_data %>%
 wide_data
 
 ```
+
 ```{r, eval=FALSE}
 
 ggplot(relational_summary) +
@@ -109,3 +111,56 @@ Caused by error in `setup_params()`:
 ! `stat_bin()` requires an x or y aesthetic.
 
 This is because the function needs to knwo what variable to use for the x or y axis.
+
+# Assignment 4
+1.
+```{r}
+rei_data <- read_csv("tidy_data/MFIndD_REI.csv")
+
+head(rei_data)
+
+rei_data<- rei_data %>%
+  filter(!is.na(response))
+
+str(rei_data)
+```
+The column type of the "response" is a chr type and "scored_response" is of the num (double) type. This is because resposne hold numerical values in the form of a character but "scored_reponse" is a double.
+2.
+```{r}
+
+rei_data <- rei_data %>%
+  mutate(response = str_trim(response),             
+         response = str_to_lower(response),   
+         response_numeric = case_when(
+           response %in% c("strongly disagree", "1") ~ 1,
+           response %in% c("disagree", "2")          ~ 2,
+           response %in% c("neutral", "3")           ~ 3,
+           response %in% c("agree", "4")             ~ 4,
+           response %in% c("strongly agree", "5")    ~ 5,
+           TRUE                                       ~ NA_real_
+         ))
+
+```
+3.
+```{r}
+rei_data <- rei_data %>%
+  mutate(new_scored_response = ifelse(!is.na(rev_scoring) & rev_scoring == "neg",
+                                      6 - response_numeric,
+                                      response_numeric))
+rei_data
+```
+4.
+```{r}
+match_summary <- sum(rei_data$new_scored_response == rei_data$scored_response, 
+                     na.rm = TRUE)
+
+total_rows <- nrow(rei_data)
+mismatch_summary <- total_rows - match_summary
+
+
+print(paste("Number of matches:", match_summary))
+print(paste("Number of mismatches:", mismatch_summary))
+
+
+```
+
