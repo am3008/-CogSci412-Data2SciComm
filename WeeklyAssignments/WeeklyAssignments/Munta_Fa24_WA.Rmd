@@ -119,8 +119,6 @@ rei_data <- read_csv("tidy_data/MFIndD_REI.csv")
 
 head(rei_data)
 
-rei_data<- rei_data %>%
-  filter(!is.na(response))
 
 str(rei_data)
 ```
@@ -163,4 +161,57 @@ print(paste("Number of mismatches:", mismatch_summary))
 
 
 ```
+# Assignment 5
+1a.
+```{r}
 
+rei_summary <- rei_data %>%
+  group_by(qualtrics_id, sub_type) %>%
+  summarize(score = sum(scored_response), .groups = "drop")
+
+rei_summary
+
+```
+1b.
+```{r}
+
+na_scores <- rei_summary %>%
+  filter(is.na(score))
+
+na_scores
+
+```
+As you can see, using default NA treatment, there are NA scores. 
+
+1c.
+```{r}
+rei_summary <- rei_data %>%
+  group_by(qualtrics_id, sub_type) %>%
+  summarize(score = sum(scored_response, na.rm = TRUE), .groups = "drop")
+
+
+rei_summary
+
+```
+2.
+```{r}
+combined_data <- left_join(rei_summary, relational_summary, by = "qualtrics_id")
+
+combined_data
+```
+
+```{r}
+
+ggplot(combined_data, aes(x = relational_match_count, y = score, color = sub_type)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +  
+  labs(
+    title = "REI Score vs. Relational Match Count",
+    x = "Relational Match Count (Analogy Score)",
+    y = "REI Score"
+  ) +
+  theme_minimal() 
+
+
+```
+In this scatter plot, there doesn't seem to be a strong correlation between REI score and the relational match count. Nonetheless, you can sees RR and RE tend to have higher overall scores; they also seem to grow as relational match count increases, along with EE. EA seems to have an inverse relationship.
