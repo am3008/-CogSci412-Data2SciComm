@@ -215,3 +215,71 @@ ggplot(combined_data, aes(x = relational_match_count, y = score, color = sub_typ
 
 ```
 In this scatter plot, there doesn't seem to be a strong correlation between REI score and the relational match count. Nonetheless, you can sees RR and RE tend to have higher overall scores; they also seem to grow as relational match count increases, along with EE. EA seems to have an inverse relationship.
+
+# Assignment 6
+
+1.
+
+```{r}
+probtask_data <- read_csv("tidy_data/MFIndD_probtask.csv")
+```
+
+2.
+```{r}
+distinct_conditions <- probtask_data %>%
+  distinct(condition) %>% 
+  pull(condition)
+
+distinct_conditions
+
+
+mean_reaction_times <- c()  
+conditions <- c()           
+
+
+for (i in seq_along(distinct_conditions)) {
+  condition_data <- probtask_data %>%
+    filter(condition == distinct_conditions[i])
+  
+
+  conditions <- c(conditions, distinct_conditions[i])
+  mean_reaction_times <- c(mean_reaction_times, mean(condition_data$rt, na.rm = TRUE))
+}
+
+for (i in seq_along(conditions)) {
+  cat(conditions[i], ":", mean_reaction_times[i], "\n")
+}
+
+
+
+```
+There are 4 distinct values in the condition column.
+
+3.
+```{r}
+# with across
+probtask_summary_across <- probtask_data %>%
+  group_by(condition) %>%
+  summarise(
+    across(c(rt, correct), 
+           list(mean = ~ mean(.x, na.rm = TRUE)), 
+           .names = "{col}_mean")
+  )
+
+
+probtask_summary_across
+
+#  without across()
+probtask_summary <- probtask_data %>%
+  group_by(condition) %>%
+  summarise(
+    mean_reaction_time = mean(rt, na.rm = TRUE),
+    accuracy = mean(correct == 1, na.rm = TRUE)
+  )
+
+
+probtask_summary
+
+
+```
+
