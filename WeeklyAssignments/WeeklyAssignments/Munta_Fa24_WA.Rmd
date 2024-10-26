@@ -7,6 +7,7 @@ date: "`r Sys.Date()`"
 # Inital Loading
 ```{r}
 library(tidyverse)
+library(ggdist)
 ```
 # Week 1
 
@@ -283,3 +284,65 @@ probtask_summary
 
 ```
 
+# Assignment 7
+
+1. 
+
+```{r}
+prob_data <- read_csv("tidy_data/MFIndD_probtask.csv")
+
+```
+
+```{r}
+prob_data %>%
+group_by(condition) %>%
+summarise(across(c(rt, correct), mean)) %>%
+pivot_longer(c(rt, correct)) %>%
+ggplot(aes(y = value, x = condition)) +
+geom_point(color = "red") +
+facet_wrap(~name, scales = "free")
+```
+1a. It appears accuracy is highest in the blob_shifted condition, but it drops a bit in the block_stacked and dots_EqSizeRand conditions. For reaction time, it’s longest in blob_shifted and dots_EqSizeSep, which might mean participants needed more time to figure those out.
+
+1b. The first thing I noticed in the graphs was the seemingly large distance on how the red dots are spread out. Obviously, this is because of the scaling, but it also seems that there are not really any mediary points between the highs and the lows.
+
+1c. Since the graphs only show the mean, it makes it hard to grab a sense of what it really means as it generalizes, especially since we cant see the spread of reaction time and accuracy. Therefore,making me very interested in any possible outliers. 
+
+2.
+
+```{r}
+
+prob_data_prop <- prob_data %>%
+  group_by(SubID, condition) %>%
+  summarise(prop_corr = mean(correct, na.rm = TRUE)) %>%
+  ungroup()
+
+prob_data_prop %>%
+  group_by(condition) %>%
+  summarise(mean_prop_corr = mean(prop_corr, na.rm = TRUE)) %>%
+  ggplot(aes(x = condition, y = mean_prop_corr)) +
+  geom_point(color = "red") +
+  labs(title = "Mean Proportion Correct by Condition",
+       x = "Condition",
+       y = "Mean Proportion Correct") +
+  theme_minimal()
+
+```
+This is less misleading because it shows the mean for accounting for participants, it does not summarize the entire data set and lets us account for accuracy per participant. This makes it a better representation of individual differences.  
+
+3.
+
+```{r}
+prob_data_prop %>%
+  ggplot(aes(x = condition, y = prop_corr)) +
+  stat_summary(geom = "point", fun = mean, color = "blue", size = 3) +  
+  ggdist::stat_slab(aes(fill = condition), alpha = 0.3) +         
+  labs(title = "Proportion Correct with Distribution by Condition",
+       x = "Condition",
+       y = "Proportion Correct") +
+  theme_minimal() 
+
+```
+This plot shows a visualization of the spread of accuracy scores. The width indicated how frequently a score occurs, with wider sections being more common scores.
+
+I used a minimal theme and gave each slab a different color and made them a bit transparent.
