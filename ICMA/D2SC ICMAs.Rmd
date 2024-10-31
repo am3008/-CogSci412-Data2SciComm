@@ -1,8 +1,17 @@
 ---
 title: "D2SC ICMAs"
-output: html_notebook
 author: "Ayush Munta"
 date: "`r Sys.Date()`"
+output: 
+  word_document: 
+    toc: yes
+  pdf_document: default
+  html_document:
+      toc: yes
+      toc_float:
+        collaposed: no
+        toc_depth: 2
+        df_print: paged
 ---
 
 # ICMA Sept 9 2024
@@ -23,13 +32,13 @@ When you save the notebook, an HTML file containing the code and output will be 
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
-
 ```{r}
 
 this_is_a_nightmare <- "hello"
 2+2
 x <- 2 + 2
 ```
+
 ```{r}
 ?mean
 help(mean)
@@ -44,6 +53,7 @@ sd(1:2)^2
 ```
 
 # ICMA Sept 16 2024
+
 ```{r}
 library(tidyverse)
 ```
@@ -60,12 +70,15 @@ mean(my_numbers)
 my_numbers %>% 
   mean()
 ```
+
 ```{r}
 getwd()
 ```
+
 ```{r}
 help("mtcars")
 ```
+
 ```{r}
 mtcars
 ```
@@ -74,19 +87,22 @@ mtcars
 write_csv(mtcars, 
           "mtcars_fromR")
 ```
+
 ```{r}
 mtcars%>%
   rownames_to_column()%>%
   write_csv("mtcars_fromR_rownames.csv")
 ```
+
 ```{r}
 mtcars_read <- read_csv("mtcars_fromR_rownames.csv")
 ```
+
 # ICMA Sept 18 2024
+
 ```{r}
 glimpse(ChickWeight)
 ```
-
 
 ```{r}
 chick_clean <- ChickWeight %>% ## assigning to a new object "chick_clean"
@@ -115,6 +131,7 @@ summary_table <- ChickWeight %>%
 ```{r}
 head(billboard)
 ```
+
 ```{r}
 billboard_long <- billboard %>%
   pivot_longer(cols = starts_with("wk"),
@@ -125,17 +142,18 @@ billboard_long <- billboard %>%
   print(billboard_long)
   dim(billboard_long)
 ```
+
 ```{r}
 billboard_long %>% 
   pivot_wider(names_from = "week",
               values_from = "position")
 ```
+
 ```{r}
 billboard_sep <- billboard %>% 
   separate(col = date.entered,
            into = c("year","month","day"))
 ```
-
 
 ```{r}
 billboard_sep %>% 
@@ -144,6 +162,7 @@ billboard_sep %>%
            ) %>%
   select(full_date)
 ```
+
 # ICMA Sept 25 2024
 
 ```{r}
@@ -181,16 +200,19 @@ ChickWeight %>%
        x = "days since birth",
        title = "Weight Over Time Across Diets")
 ```
+
 # ICMA Oct 7 2024
 
 ```{r}
 is.numeric(mean(c(12, 31, 15.57, 4)))
 
 ```
+
 ```{r}
 ((1 + 2) < -1000) | (TRUE & NA)
 
 ```
+
 ```{r}
 (2 + 3 + 9 - 4 == 2 + 6 + as.integer("2.9")) & TRUE | NA
 
@@ -207,7 +229,7 @@ is.numeric(mean(c(12, 31, 15.57, 4)))
 my_number <- 12
 
 ```
- 
+
 ```{r}
 age_data <- tribble(
                     ~ id, ~ age,
@@ -236,37 +258,42 @@ gender_data_BADID <- tribble(
                     6, "f"
             )
 ```
- 
+
 ```{r}
 age_data
 
 ```
- 
+
 ```{r}
 gender_data
 
 ```
+
 ```{r}
 full_join(age_data, gender_data)
 
 ```
+
 ```{r}
 full_join(gender_data_BADID, age_data, by = join_by(id_x == id))
 
 ```
+
 ```{r}
 full_join(age_data, gender_data_BADID, by = join_by(id == id_x))
 
 ```
- 
+
 ```{r}
 right_join(age_data, gender_data)
 
 ```
+
 ```{r}
 left_join(age_data, gender_data)
 
 ```
+
 ```{r}
 inner_join(age_data, gender_data)
 
@@ -289,32 +316,36 @@ gender_data_4 <- tribble(
                     4, "m"
             )
 ```
- 
+
 ```{r}
 bind_cols(age_data_4, gender_data_4)
 
 ```
+
 ```{r}
 bind_rows(age_data_4, gender_data_4)
 
 ```
+
 # ICMA Oct 16 2024
 
 ```{r}
 mean(c(1,2,3))
 ```
+
 ```{r}
 (1 + 2 + 3)/3
 
 ```
+
 ```{r}
 vec <- c(1, 2, 3)
 ```
- 
+
 ```{r}
 (vec[1] + vec[2] + vec[3])/length(vec)
 ```
- 
+
 ```{r}
 fave_number <- tribble(~name, ~number,
                        "MC", 8,
@@ -332,12 +363,13 @@ fave_number <- tribble(~name, ~number,
                        "VK", 17,
                        "MH", 12)
 ```
- 
+
 ```{r}
 for (i in fave_number) {
   print(i)
 }
 ```
+
 ```{r}
 class(fave_number)
 ```
@@ -353,6 +385,7 @@ for (i in fave_number$number) {
   print(i)
 }
 ```
+
 ```{r}
 length(fave_number$number)
 
@@ -378,9 +411,11 @@ for (i in fave_number[["number"]]) {
   print(i)
 }
 ```
+
 ```{r}
 str_c("takes vectors", "and puts them", "together", sep = " ")
 ```
+
 ```{r}
 for (i in seq_along(fave_number$name)) {
   
@@ -394,6 +429,7 @@ for (i in seq_along(fave_number$name)) {
 mtcars
 
 ```
+
 # ICMA Oct 21 2024
 
 ```{r}
@@ -421,7 +457,6 @@ raw_data <- map(files, read_csv) %>%
 ```{r}
 raw_data
 ```
-
 
 ```{r}
 raw_data %>%
@@ -503,6 +538,7 @@ raw_data %>%
   annotate(geom = "text", label = "binocular",
            x = 11, y = 0.1, color = "darkblue")
 ```
+
 ```{r}
 raw_data %>%
   distinct(experimenter)
@@ -517,5 +553,19 @@ raw_data %>%
              x = experimenter)) +
   geom_jitter(alpha = 0.3, width = 0.1, height = 0) +
   ylim(0, 1)
+```
+
+# ICMA Oct 30 2024
+
+```{r}
+name <- "Ayush"
+```
+
+My name is `r name` and I really have it when people use both **bold** and *italics* in the same sentence.
+
+```{r chick-plot, fig.cap="Chick weight across time"}
+ChickWeight %>%
+  ggplot(aes(y = weight, x = Time, group = Chick)) +
+  geom_line()
 ```
 
