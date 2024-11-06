@@ -7,14 +7,17 @@ output:
     toc: true
     toc_float: true
 ---
+
 # Inital Loading
+
 ```{r}
 library(tidyverse)
 library(ggdist)
 ```
+
 # Week 1
 
-I went to http://google.com and looked up "how to load library in R". From there, I went to images, and found an example after looking a couple photos. I checked that it was working by typing in what I saw in a chunk, and then I ran the chunk of code. 
+I went to <http://google.com> and looked up "how to load library in R". From there, I went to images, and found an example after looking a couple photos. I checked that it was working by typing in what I saw in a chunk, and then I ran the chunk of code.
 
 ```{r}
 ?tidyverse
@@ -22,16 +25,16 @@ I went to http://google.com and looked up "how to load library in R". From there
 
 Description
 
-The 'tidyverse' is a set of packages that work in harmony because they share common data representations and 'API' design. This package is designed to make it easy to install and load multiple 'tidyverse' packages in a single step. Learn more about the 'tidyverse' at https://www.tidyverse.org.
+The 'tidyverse' is a set of packages that work in harmony because they share common data representations and 'API' design. This package is designed to make it easy to install and load multiple 'tidyverse' packages in a single step. Learn more about the 'tidyverse' at <https://www.tidyverse.org>.
 
 # Assignment 2
-
 
 ```{r}
 analogy_data <- read_csv("tidy_data/MFIndD_analogy.csv")
 
 ```
-1. qualtrics_id has the unique identifier for each participant 
+
+1.  qualtrics_id has the unique identifier for each participant
 
 ```{r}
 num_rows <- analogy_data %>%
@@ -43,6 +46,7 @@ num_columns <- analogy_data %>%
 num_rows
 num_columns
 ```
+
 2A. There are 792 rows and 6 columns. These numbers are found by running the summarise() function from dplyr in conjunction with n() or ncol(). Furthermore, these also show up while running read_csv() from the readr package or simply using dim() which is a base R package
 
 ```{r}
@@ -52,6 +56,7 @@ num_people <- analogy_data %>%
 
 num_people
 ```
+
 2B. There are 99 people in this data set. This number is found by finding the distinct number of qualtrics_id's (which represent participants), and then using count() to count them.
 
 ```{r}
@@ -61,6 +66,7 @@ trial_counts <- analogy_data %>%
 
 trial_counts
 ```
+
 2C. Everyone from the data has the same number of trials. They each have 8 in this case. This is found by using count() to return the number of trials for each participant, and then using distinct to simply by seeing how many unique value there are. In this case, since it returned one value (8) that means everyone had the same amount of trials.
 
 # Assignment 3
@@ -73,6 +79,7 @@ relational_summary <- analogy_data %>%
 
 relational_summary
 ```
+
 ```{r}
 library(ggplot2)  
 ```
@@ -87,7 +94,9 @@ ggplot(relational_summary, aes(x = relational_match_count)) +
    scale_x_continuous(breaks = seq(0, 8, by = 1)) +
   theme_minimal()
 ```
+
 It seems the extremes (0 and 8) are the most common relational matches, while 5 has none.
+
 ```{r}
 wide_data <- analogy_data %>%
   select(qualtrics_id, trial_number, response_type) %>%  
@@ -109,15 +118,14 @@ ggplot(relational_summary) +
 
 I think a common error might be forgetting to have defined the x aesthetic, which is required by geom_histogram(). This will throw the error:
 
-Error in `geom_histogram()`:
-! Problem while computing stat.
-Caused by error in `setup_params()`:
-! `stat_bin()` requires an x or y aesthetic.
+Error in `geom_histogram()`: ! Problem while computing stat. Caused by error in `setup_params()`: ! `stat_bin()` requires an x or y aesthetic.
 
-This is because the function needs to knwo what variable to use for the x or y axis.
+This is because the function needs to know what variable to use for the x or y axis.
 
 # Assignment 4
-1.
+
+1.  
+
 ```{r}
 rei_data <- read_csv("tidy_data/MFIndD_REI.csv")
 
@@ -126,8 +134,9 @@ head(rei_data)
 
 str(rei_data)
 ```
-The column type of the "response" is a chr type and "scored_response" is of the num (double) type. This is because resposne hold numerical values in the form of a character but "scored_reponse" is a double.
-2.
+
+The column type of the "response" is a chr type and "scored_response" is of the num (double) type. This is because resposne hold numerical values in the form of a character but "scored_reponse" is a double. 2.
+
 ```{r}
 
 rei_data <- rei_data %>%
@@ -143,7 +152,9 @@ rei_data <- rei_data %>%
          ))
 
 ```
-3.
+
+3.  
+
 ```{r}
 rei_data <- rei_data %>%
   mutate(new_scored_response = ifelse(!is.na(rev_scoring) & rev_scoring == "neg",
@@ -151,7 +162,9 @@ rei_data <- rei_data %>%
                                       response_numeric))
 rei_data
 ```
-4.
+
+4.  
+
 ```{r}
 match_summary <- sum(rei_data$new_scored_response == rei_data$scored_response, 
                      na.rm = TRUE)
@@ -165,8 +178,11 @@ print(paste("Number of mismatches:", mismatch_summary))
 
 
 ```
+
 # Assignment 5
+
 1a.
+
 ```{r}
 
 rei_summary <- rei_data %>%
@@ -176,7 +192,9 @@ rei_summary <- rei_data %>%
 rei_summary
 
 ```
+
 1b.
+
 ```{r}
 
 na_scores <- rei_summary %>%
@@ -185,9 +203,11 @@ na_scores <- rei_summary %>%
 na_scores
 
 ```
-As you can see, using default NA treatment, there are NA scores. 
+
+As you can see, using default NA treatment, there are NA scores.
 
 1c.
+
 ```{r}
 rei_summary <- rei_data %>%
   group_by(qualtrics_id, sub_type) %>%
@@ -197,7 +217,9 @@ rei_summary <- rei_data %>%
 rei_summary
 
 ```
-2.
+
+2.  
+
 ```{r}
 combined_data <- left_join(rei_summary, relational_summary, by = "qualtrics_id")
 
@@ -218,17 +240,19 @@ ggplot(combined_data, aes(x = relational_match_count, y = score, color = sub_typ
 
 
 ```
+
 In this scatter plot, there doesn't seem to be a strong correlation between REI score and the relational match count. Nonetheless, you can sees RR and RE tend to have higher overall scores; they also seem to grow as relational match count increases, along with EE. EA seems to have an inverse relationship.
 
 # Assignment 6
 
-1.
+1.  
 
 ```{r}
 probtask_data <- read_csv("tidy_data/MFIndD_probtask.csv")
 ```
 
-2.
+2.  
+
 ```{r}
 distinct_conditions <- probtask_data %>%
   distinct(condition) %>% 
@@ -257,9 +281,11 @@ for (i in seq_along(conditions)) {
 
 
 ```
+
 There are 4 distinct values in the condition column.
 
-3.
+3.  
+
 ```{r}
 # with across
 probtask_summary_across <- probtask_data %>%
@@ -289,7 +315,7 @@ probtask_summary
 
 # Assignment 7
 
-1. 
+1.  
 
 ```{r}
 prob_data <- read_csv("tidy_data/MFIndD_probtask.csv")
@@ -305,13 +331,14 @@ ggplot(aes(y = value, x = condition)) +
 geom_point(color = "red") +
 facet_wrap(~name, scales = "free")
 ```
+
 1a. It appears accuracy is highest in the blob_shifted condition, but it drops a bit in the block_stacked and dots_EqSizeRand conditions. For reaction time, it’s longest in blob_shifted and dots_EqSizeSep, which might mean participants needed more time to figure those out.
 
 1b. The first thing I noticed in the graphs was the seemingly large distance on how the red dots are spread out. Obviously, this is because of the scaling, but it also seems that there are not really any mediary points between the highs and the lows.
 
-1c. Since the graphs only show the mean, it makes it hard to grab a sense of what it really means as it generalizes, especially since we cant see the spread of reaction time and accuracy. Therefore,making me very interested in any possible outliers. 
+1c. Since the graphs only show the mean, it makes it hard to grab a sense of what it really means as it generalizes, especially since we cant see the spread of reaction time and accuracy. Therefore,making me very interested in any possible outliers.
 
-2.
+2.  
 
 ```{r}
 
@@ -331,9 +358,10 @@ prob_data_prop %>%
   theme_minimal()
 
 ```
-This is less misleading because it shows the mean for accounting for participants, it does not summarize the entire data set and lets us account for accuracy per participant. This makes it a better representation of individual differences.  
 
-3.
+This is less misleading because it shows the mean for accounting for participants, it does not summarize the entire data set and lets us account for accuracy per participant. This makes it a better representation of individual differences.
+
+3.  
 
 ```{r}
 prob_data_prop %>%
@@ -346,15 +374,16 @@ prob_data_prop %>%
   theme_minimal() 
 
 ```
+
 This plot shows a visualization of the spread of accuracy scores. The width indicated how frequently a score occurs, with wider sections being more common scores.
 
 I used a minimal theme and gave each slab a different color and made them a bit transparent.
 
 # Assignment 8
 
-1. Added table of contents above.
+1.  Added table of contents above.
 
-2. 
+2.  
 
 ```{r}
 summary_probdata <- prob_data %>%
@@ -365,7 +394,9 @@ summary_probdata <- prob_data %>%
   ungroup() 
 head(summary_probdata)
 ```
+
 3..
+
 ```{r}
 ggplot(summary_probdata, aes(x = rt, y = correct, color = condition)) +
   geom_point() +
@@ -375,6 +406,7 @@ ggplot(summary_probdata, aes(x = rt, y = correct, color = condition)) +
     y = "Proportion Correct") +
   theme_minimal()
 ```
+
 ```{r}
 ggplot(summary_probdata, aes(x = rt, y = correct, color = condition)) +
   geom_point() +
@@ -385,6 +417,7 @@ ggplot(summary_probdata, aes(x = rt, y = correct, color = condition)) +
     y = "Proportion Correct") +
   theme_minimal()
 ```
-4.
+
+4.  
 
 All of these plots demonstrate a **positive** correlation. Although the way in the increase seems to differ, *blob_shifted* and *dots_EqSizeSep* growth seems to taper down. While *blob_stacked* and *dots_EqSizeRand* growth seem no sign of slowing down.
