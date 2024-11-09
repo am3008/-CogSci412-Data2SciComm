@@ -1,0 +1,64 @@
+---
+title: "Munta_WA9"
+author: "Ash Munta"
+date: "2024-11-09"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(ggdist)
+prob_data<-read_csv("data/MFIndD_probtask.csv")
+```
+
+```{r dataprep}
+prob_data_mod <- prob_data %>%
+  #a
+  separate(left_stim, into = c("left_numerator", "left_other"), sep = "_", convert = TRUE) %>%
+  
+  #b
+  separate(right_stim, into = c("right_numerator", "right_other"), sep = "_", convert = TRUE) %>%
+  
+  #c
+  mutate(
+    left_proportion_value = left_numerator / (left_numerator + left_other),
+    right_proportion_value = right_numerator / (right_numerator + right_other),
+  #d
+    larger_numerator = if_else(left_numerator > right_numerator, "left", "right"),
+  #e
+    larger_proportion = if_else(left_proportion_value > right_proportion_value, "left", "right"),
+  #f
+    num_congruent = (larger_numerator == larger_proportion)
+  )
+ 
+
+```
+
+
+```{r}
+summary_data <- prob_data_mod %>%
+  group_by(SubID, condition, num_congruent) %>%
+  summarize(proportion_correct = mean(correct == TRUE), .groups = "drop")
+
+plot <- ggplot(summary_data, aes(x = condition, y = proportion_correct, color = num_congruent)) +
+  stat_halfeye() +
+  labs(
+    y = "Proportion Correct",
+    x = "Condition",
+    color = "Numerator Congruency"
+  ) +
+  theme_minimal()
+
+```
+## Research Question
+- How do people think proportionally with different kinds of stimuli?
+
+## Fork Question
+- How does numerator congruency affect accuracy in probability judgments?
+
+## Plot
+```{r}
+plot
+```
+
