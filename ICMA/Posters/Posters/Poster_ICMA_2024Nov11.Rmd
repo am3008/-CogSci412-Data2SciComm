@@ -1,0 +1,50 @@
+---
+main_topsize: 0.2 #percent coverage of the poster
+main_bottomsize: 0.1
+#ESSENTIALS
+title: '**A Better Reproducible Poster Title**'
+author:
+  - name: '**Michelle Hurst**'
+    affil: 1
+    main: true
+    email: michelle.hurst@rutgers.edu
+main_findings:
+  - "Make **better posters** with RMarkdown + **posterdown**."
+logoleft_name: https&#58;//raw.githubusercontent.com/brentthorne/posterdown/master/images/betterhexlogo.png
+logoright_name: https&#58;//raw.githubusercontent.com/brentthorne/posterdown/master/images/betterhexlogo.png
+logocenter_name: https&#58;//raw.githubusercontent.com/brentthorne/posterdown/master/images/qr-code-black.png
+output: 
+  posterdown::posterdown_betterport:
+    self_contained: false
+    pandoc_args: --mathjax
+    number_sections: false
+bibliography: packages.bib
+link-citations: true
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center',
+                      out.width = "100%")
+library(tidyverse)
+options(knitr.table.format = "html") 
+```
+
+# Header 1
+
+
+# Header 2
+
+
+# Header 3
+
+```{r}
+ChickWeight %>%
+  ggplot(aes(y = weight, x = Time)) +
+  geom_point() +
+  geom_smooth()
+```
+
