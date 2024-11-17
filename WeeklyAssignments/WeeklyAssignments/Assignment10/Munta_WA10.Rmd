@@ -1,0 +1,181 @@
+---
+title: Proportional reasoning across formats
+author:
+  - name: Ayush Munta
+    affil: 1
+    email: am3008@rutgers.edu
+    orcid: 0000-0002-1099-3857
+    main: true
+affiliation:
+  - num: 1
+    address: Rutgers University
+output: 
+  posterdown::posterdown_betterland:
+    self_contained: false
+    pandoc_args: --mathjax
+    highlight: haddock
+    number_sections: false
+link-citations: true
+bibliography: packages.bib
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(results = 'asis',
+                      echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center',
+                      out.width = "100%")
+options(knitr.table.format = "html")
+library(tidyverse)
+library(ggdist)
+prob_data<-read_csv("data/MFIndD_probtask.csv")
+```
+
+
+# Introduction
+
+Comparing proportions is sometimes very hard! But, even infants seem to be able to do it a little bit. The purpose of this science project was to better understand how well people compare proportions when the proportions are presented in different formats.
+
+The purpose of this class assignment is to take the R-code and plots we've been generating over the last several weeks and put it all together into one poster format.
+
+
+```{r, include=FALSE}
+knitr::write_bib(c('posterdown', 'rmarkdown','pagedown'), 'packages.bib')
+```
+
+## Research Objectives
+
+1. Does average performance vary across format type?
+2. Does average performance vary across numerator congruency status?
+3. Does numerator congruency vary across format type (i.e., is there an interaction)?
+
+# Participants
+
+```{r, num_participants, include=FALSE}
+num_participants <- prob_data %>%
+  distinct(SubID)
+
+count(num_participants)
+```
+A total of `r nrow(num_participants)` adults participated in the study. 
+
+
+# Methods
+
+Participants were introduced to a story about a magic ball where the outcome (i.e., blue or orange) depended on the proportions. They were then asked to compare the proportions of different images.
+
+Participants were shown two images of the same kind at the same time and asked to decide which had a higher proportion of the shape (or dots) colored in blue.
+
+`r knitr::include_graphics("data/Probtask_Trial.png")`
+
+### Conditions
+The study had four experimental conditions based on the format of the presented images:
+
+Divided blobs: Blue and orange were entirely separate.
+Integrated blob: One blob, divided to be part blue and part orange.
+Separated dots: Blue and orange dots were on opposite sides of the image.
+Integrated dots: Blue and orange dots were intermixed.
+
+`r knitr::include_graphics("data/Probtask_formats.png")`
+
+# Results
+1. Does average performance vary across format type, ignoring all other aspects of the stimuli?
+```{r}
+
+prob_data_prop <- prob_data %>%
+  group_by(SubID, condition) %>%
+  summarise(prop_corr = mean(correct, na.rm = TRUE)) %>%
+  ungroup()
+
+```
+```{r}
+prob_data_prop %>%
+  ggplot(aes(x = condition, y = prop_corr)) +
+  stat_summary(geom = "point", fun = mean, color = "blue", size = 3) +  
+  ggdist::stat_slab(aes(fill = condition), alpha = 0.3) +         
+  labs(title = "Proportion Correct with Distribution by Condition",
+       x = "Condition",
+       y = "Proportion Correct") +
+  theme_minimal() 
+
+```
+ It appears accuracy is highest in the blob_shifted condition, but it drops a bit in the block_stacked and dots_EqSizeRand conditions. 
+
+2. How are reaction time and accuracy related?
+
+```{r}
+summary_probdata <- prob_data %>%
+  group_by(SubID, condition) %>%
+  summarise(
+    rt = mean(rt, na.rm = TRUE),
+    correct = mean(correct, na.rm = TRUE)) %>%
+  ungroup() 
+```
+
+```{r}
+ggplot(summary_probdata, aes(x = rt, y = correct, color = condition)) +
+  geom_point() +
+  facet_wrap(~condition) +
+  labs(
+    title = "Reaction Time vs Accuracy by Condition",
+    x = "Reaction Time (ms)", 
+    y = "Proportion Correct") +
+  theme_minimal()
+```
+These plots demonstrate a positive correlation between reaction time and proportion correct.
+
+
+3. How does numerator congruency interact with format type?
+
+```{r dataprep}
+prob_data_mod <- prob_data %>%
+  #a
+  separate(left_stim, into = c("left_numerator", "left_other"), sep = "_", convert = TRUE) %>%
+  
+  #b
+  separate(right_stim, into = c("right_numerator", "right_other"), sep = "_", convert = TRUE) %>%
+  
+  #c
+  mutate(
+    left_proportion_value = left_numerator / (left_numerator + left_other),
+    right_proportion_value = right_numerator / (right_numerator + right_other),
+  #d
+    larger_numerator = if_else(left_numerator > right_numerator, "left", "right"),
+  #e
+    larger_proportion = if_else(left_proportion_value > right_proportion_value, "left", "right"),
+  #f
+    num_congruent = (larger_numerator == larger_proportion)
+  )
+ 
+
+```
+
+```{r}
+summary_data <- prob_data_mod %>%
+  group_by(SubID, condition, num_congruent) %>%
+  summarize(proportion_correct = mean(correct == TRUE), .groups = "drop")
+
+plot <- ggplot(summary_data, aes(x = condition, y = proportion_correct, color = num_congruent)) +
+  stat_halfeye() +
+  labs(
+    y = "Proportion Correct",
+    x = "Condition",
+    color = "Numerator Congruency"
+  ) +
+  theme_minimal()
+plot
+```
+
+Numerator congruency seems to cause an increase in proportion correct across format types.
+
+# Interpretation
+
+As demonstrated, average performance does vary across format type. Furthermore, average performance also varyies across numerator congruency. On the flipside, there is no variation of numerator congruency across format type.
+
+# Conclusion
+
+1. The most annoying thing about this assignemnt was the template and making it look nice.
+
+2. The most satisfying or fun thing about this assignment was changing something in the template and seeing it change easily without much work.
