@@ -1,0 +1,216 @@
+---
+title             : "Proportional resasoning across formats"
+
+author: 
+  - name          : "Ayush Munta"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Postal address"
+    email         : "am3008@rutgers.edu"
+    role: # Contributorship roles (e.g., CRediT, https://credit.niso.org/)
+      - "Conceptualization"
+      - "Writing - Original Draft Preparation"
+      - "Writing - Review & Editing"
+
+affiliation:
+  - id            : "1"
+    institution   : "Rutgers University"
+
+  
+keywords          : "keywords"
+wordcount         : "X"
+
+bibliography      : "r-references.bib"
+
+floatsintext      : no
+linenumbers       : yes
+draft             : no
+mask              : no
+
+figurelist        : yes
+tablelist         : no
+footnotelist      : no
+
+classoption       : "man"
+output: 
+  papaja::apa6_docx:
+    floatsintext: yes
+    fig_caption: true
+
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+library(tidyverse)
+library(ggdist)
+prob_data <- read_csv("data/MFIndD_probtask.csv")
+r_refs("r-references.bib")
+```
+
+```{r theme}
+theme_set(
+  theme_minimal()
+)
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+
+
+# Introduction
+
+Comparing proportions is sometimes very hard! But, even infants seem to be able to do it a little bit. The purpose of this science project was to better understand how well people compare proportions when the proportions are presented in different formats.
+
+The purpose of this class assignment is to take the R-code and plots we've been generating over the last several weeks and put it all together into one poster format. Let's take a look at our research objectives.
+
+## Research Objectives
+
+1. Does average performance vary across format type?
+2. Does average performance vary across numerator congruency status?
+3. Does numerator congruency vary across format type (i.e., is there an interaction)?
+
+# Methods
+
+```{r, num_participants, include=FALSE}
+num_participants <- prob_data %>%
+  distinct(SubID)
+
+count(num_participants)
+```
+
+A total of `r nrow(num_participants)` adults participated in the study. 
+
+First, participants were introduced to a story about a magic ball and that the outcome (i.e., blue or orange) depended on the proportions. They were then asked to compare the proportions of different images.
+
+In other words, participants were shown two images of the same kind at the same time and asked to decide which had a higher proportion of the shape (or dots) colored in blue. You can notice this in Figure \@ref(fig:fig1).
+
+```{r fig1, fig.cap="Dot Proportion Task", out.width='60%'}
+knitr::include_graphics("data/Probtask_trial.png")
+```
+
+
+## Data analysis
+The data analysis was conducted using the following R packages: dplyr [@R-dplyr] for data wrangling and summarization, and ggplot2 [@R-ggplot2] for data visualization.
+
+
+# Results
+
+1. Does average performance vary across format type, ignoring all other aspects of the stimuli?
+```{r plot1data}
+
+prob_data_prop <- prob_data %>%
+  group_by(SubID, condition) %>%
+  summarise(prop_corr = mean(correct, na.rm = TRUE)) %>%
+  ungroup()
+
+```
+```{r plot1, fig.cap="Proportion Correct with Distribution by Condition"}
+plot1 <- prob_data_prop %>%
+  ggplot(aes(x = condition, y = prop_corr, fill = condition)) +
+  stat_summary(geom = "point", fun = mean, color = "blue", size = 3, position = position_dodge(0.5)) +  
+  ggdist::stat_slab(alpha = 0.5, position = "dodge") +         
+  labs(title = "Proportion Correct with Distribution by Condition",
+       x = "Condition",
+       y = "Proportion Correct") +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_minimal()
+
+plot1
+```
+ 
+ 
+ As seen in Figure \@ref(fig:plot1), it appears accuracy is highest in the blob_shifted condition, but it drops a bit in the block_stacked and dots_EqSizeRand conditions. 
+
+2. How are reaction time and accuracy related?
+
+```{r plot2data}
+summary_probdata <- prob_data %>%
+  group_by(SubID, condition) %>%
+  summarise(
+    rt = mean(rt, na.rm = TRUE),
+    correct = mean(correct, na.rm = TRUE)) %>%
+  ungroup() 
+```
+
+```{r plot2, fig.cap="Reaction Time vs Accuracy by Condition"}
+plot2 <- ggplot(summary_probdata, aes(x = rt, y = correct, color = condition)) +
+  geom_point(alpha = 0.7) +  
+  facet_wrap(~condition) +
+  labs(
+    title = "Reaction Time vs Accuracy by Condition",
+    x = "Reaction Time (ms)", 
+    y = "Proportion Correct"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +  
+  theme_minimal()
+
+plot2
+```
+
+
+As seen in Figure \@ref(fig:plot2), these plots demonstrate a positive correlation between reaction time and proportion correct.
+
+
+3. How does numerator congruency interact with format type?
+
+```{r dataprep}
+prob_data_mod <- prob_data %>%
+  #a
+  separate(left_stim, into = c("left_numerator", "left_other"), sep = "_", convert = TRUE) %>%
+  
+  #b
+  separate(right_stim, into = c("right_numerator", "right_other"), sep = "_", convert = TRUE) %>%
+  
+  #c
+  mutate(
+    left_proportion_value = left_numerator / (left_numerator + left_other),
+    right_proportion_value = right_numerator / (right_numerator + right_other),
+  #d
+    larger_numerator = if_else(left_numerator > right_numerator, "left", "right"),
+  #e
+    larger_proportion = if_else(left_proportion_value > right_proportion_value, "left", "right"),
+  #f
+    num_congruent = (larger_numerator == larger_proportion)
+  )
+ 
+
+```
+
+```{r plot3, fig.cap="Numerator Congruency by Proportion Correct"}
+summary_data <- prob_data_mod %>%
+  group_by(SubID, condition, num_congruent) %>%
+  summarize(proportion_correct = mean(correct == TRUE), .groups = "drop")
+
+plot3 <- ggplot(summary_data, aes(x = condition, y = proportion_correct, color = num_congruent)) +
+  stat_halfeye(alpha = 0.5, position = "dodge") + 
+  labs(
+    y = "Proportion Correct",
+    x = "Condition",
+    color = "Numerator Congruency"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) + 
+  theme_minimal()
+
+plot3
+```
+
+As seen in Figure \@ref(fig:plot3), numerator congruency seems to cause an increase in proportion correct across format types.
+
+# Discussion
+
+As demonstrated, average performance does vary across format type. Furthermore, average performance also varyies across numerator congruency. On the flipside, there is no variation of numerator congruency across format type.
+
+1. The most annoying thing about this assignment was realizing my captions werent showing because I need extra line spacing after my code chunks.
+
+2. The most satisfying or fun thing about this assignment was changing something in the template and seeing it change easily without much work.
+
+\newpage
+
+# References
+
+::: {#refs custom-style="Bibliography"}
+:::
