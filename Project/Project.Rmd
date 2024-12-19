@@ -1,0 +1,303 @@
+---
+title             : "Demographic Insights on Film Ratings and Preferences"
+shorttitle        : "Film Preferences by Demographics"
+
+author: 
+  - name          : "Ash Munta"
+    affiliation   : "1"
+    corresponding : yes
+    address       : "7500 CPO Way"
+    email         : "am3008@rutgers.edu"
+    role: 
+      - "Conceptualization" 
+      - "Writing - Original Draft Preparation"
+      - "Writing - Review & Editing"
+
+affiliation:
+  - id            : "1"
+    institution   : "Rutgers University"
+
+authornote: |
+  The authors acknowledge the support of the GroupLens Research Project for making the MovieLens dataset publicly available. We also thank the R community for providing robust data visualization tools.
+
+abstract: |
+ Movies serve as a cultural touchstone that resonate differently with various demographic groups. In this study, we leverage the MovieLens 100k dataset to explore how age, gender, and occupation shape movie ratings and genre preferences. Our visual analyses reveal that preferences evolve across the lifespan, with younger viewers gravitating toward horror and western films and older audiences favoring fantasises and crime. Gender-associated patterns, while often subtle, highlight slight differences in top-rated films and rating distributions for popular titles. Occupation, too, emerges as an influential factor, as certain professional groups show distinct affinities for specific genres. These insights underscore the importance of incorporating demographic signals into recommendation systems and content strategies, ensuring a more inclusive and satisfying cinematic experience.
+
+bibliography      : "r-references.bib"
+
+floatsintext      : no
+linenumbers       : yes
+draft             : no
+mask              : no
+
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+
+classoption       : "man"
+output            : papaja::apa6_docx
+---
+```{r setup, include = FALSE}
+library("papaja")
+library("tidyverse")
+r_refs("r-references.bib")
+
+# Ensure reproducibility
+set.seed(42)
+knitr::opts_chunk$set(echo = FALSE, 
+                      message = FALSE, 
+                      warning = FALSE, 
+                      fig.width = 7, 
+                      fig.height = 5)
+```
+
+# Introduction
+
+Consumer engagement with entertainment media, such as films, often varies according to demographic factors like age, gender, and occupation. Understanding these differences is critical not only for recommendation systems and marketing strategies but also for shedding light on inherent biases in how content is rated and perceived. For example, certain genres may be systematically underrated or overrated by specific demographic groups, influencing the overall ratings landscape and possibly marginalizing some types of films.
+
+By examining demographic influences on movie ratings, we can visualize patterns that highlight potential biases and preferences. Such insights may guide content creators, distributors, and platform developers in curating more inclusive offerings. This also allows for more transparent recommendation algorithms that acknowledge demographic trends, ultimately enhancing user experience and satisfaction.
+
+**Research Questions:**
+
+1. **Primary Question:** How do demographic factors—particularly age, gender, and occupation—influence movie ratings and genre preferences?
+
+2. **Secondary Question:**
+Do users from different age groups, genders, and occupations rate movies differently on average, and do they have distinct genre preferences?
+
+# Method
+
+## Data Source and Collection
+
+I used the **MovieLens 100k dataset**, collected by the GroupLens Research Project at the University of Minnesota (September 1997–April 1998). Users of the MovieLens platform voluntarily rated movies on a 1–5 scale. Demographic details (age, gender, occupation, zip code) were self-reported. The dataset includes 100,000 ratings from 943 users on 1,682 movies.
+
+## Participants
+
+- **Users (N=943):** Each user rated at least 20 movies.
+- **Demographics:** Mean age ~ 34 years, gender recorded as M/F, and a wide range of occupations (e.g., student, educator, technician).
+
+## Data
+
+- **Ratings Data (u.data):** `user_id`, `movie_id`, `rating`, `timestamp`.
+- **User Data (u.user):** `user_id`, `age`, `gender`, `occupation`, `zip_code`.
+- **Item Data (u.item):** `movie_id`, `title`, `release_date`, plus 19 binary genre indicators:
+  Action, Adventure, Animation, Children's, Comedy, Crime, Documentary, Drama, Fantasy, Film-Noir, Horror, Musical, Mystery, Romance, Sci-Fi, Thriller, War, Western, and an unknown category.
+
+## Procedure
+
+The data was obtained from the MovieLens website, where users rated movies voluntarily. All three data files were merged into one comprehensive dataset.
+
+## Data Analysis
+
+The data analysis was conducted using the following R packages: dplyr [@R-dplyr] for data wrangling and summarization, and ggplot2 [@R-ggplot2] for data visualization.
+
+```{r load_data, include=FALSE}
+u_data <- read_delim("ml-100k/u.data", delim = "\t", 
+                     col_names = c("user_id", "movie_id", "rating", "timestamp"))
+u_user <- read_delim("ml-100k/u.user", delim = "|", 
+                     col_names = c("user_id", "age", "gender", "occupation", "zip_code"))
+u_item <- read_delim("ml-100k/u.item", delim = "|", 
+                     col_names = c("movie_id", "title", "release_date", "video_release_date",
+                                   "IMDb_URL", "unknown", "Action", "Adventure", "Animation", 
+                                   "Children's", "Comedy", "Crime", "Documentary", "Drama", 
+                                   "Fantasy", "Film-Noir", "Horror", "Musical", "Mystery", 
+                                   "Romance", "Sci-Fi", "Thriller", "War", "Western"))
+genres <- c("Action", "Adventure", "Animation", "Children's", "Comedy", "Crime", 
+            "Documentary", "Drama", "Fantasy", "Film-Noir", "Horror", "Musical", 
+            "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western")
+
+merged_data <- u_data %>%
+  inner_join(u_user, by = "user_id") %>%
+  inner_join(u_item, by = "movie_id")
+```
+
+# Results
+
+## Plot 1: Continuous Age vs. Average Rating
+
+```{r plot1-line-age, fig.cap="Average movie rating as a continuous function of age."}
+age_continuous <- merged_data %>%
+  group_by(age) %>%
+  summarize(avg_rating = mean(rating), .groups="drop")
+
+ggplot(age_continuous, aes(x = age, y = avg_rating)) +
+  geom_point(color = "blue", alpha = 0.7) + 
+  geom_smooth(method = "loess", color="red", fill="gray70", se=TRUE) +
+  labs(title="Average Rating by Age",
+       x="Age",
+       y="Average Rating") +
+  theme_minimal()
+
+```
+
+This plot shows average movie ratings as a function of continuous age. Each blue point represents the average rating given by users of that exact age, while the red LOESS line and gray confidence band illustrate a smoothed trend. The trend suggests that ratings start slightly below 3.5 for younger ages, increase gradually into the late 20s and 30s, then plateau or slightly decline past middle age. Although variability exists at all ages, there’s a gentle upward trend in the center, indicating subtle shifts in taste or rating tendencies across the lifespan.
+
+## Plot 2: Faceted Heatmap of Genre Preferences by Gender and Age Group
+
+```{r plot2-faceted-heatmap-gender-age, fig.cap="Faceted heatmap of genre preferences by gender and age group."}
+age_grouped_data <- merged_data %>%
+  mutate(age_group = case_when(
+    age < 18 ~ "Under 18",
+    age >= 18 & age < 30 ~ "18-29",
+    age >= 30 & age < 50 ~ "30-49",
+    age >= 50 ~ "50+"
+  ))
+
+age_grouped_data <- age_grouped_data %>%
+  mutate(age_group = factor(age_group, levels = c("Under 18", "18-29", "30-49", "50+")))
+
+age_gender_genre <- age_grouped_data %>%
+  pivot_longer(cols=all_of(genres), names_to="genre", values_to="flag") %>%
+  filter(flag==1) %>%
+  group_by(gender, age_group, genre) %>%
+  summarize(mean_rating=mean(rating), .groups="drop")
+
+ggplot(age_gender_genre, aes(x=age_group, y=genre, fill=mean_rating)) +
+  geom_tile() +
+  scale_fill_viridis_c(option="magma") +
+  facet_wrap(~gender, ncol=1) +
+  labs(title="Genre Preferences by Gender and Age Group",
+       x="Age Group",
+       y="Genre",
+       fill="Avg. Rating") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+This heat map visualizes mean ratings for various genres across different age groups, separated by gender (F on top, M below). Darker hues indicate lower ratings, lighter or more intense hues (toward yellow/white) indicate higher ratings. This map highlights a couple different trends. First we notice, regardless of gender, younger audiences tend to be more critical. Nonetheless, there seems to be a variation in preferences by age group for through a gender distinction.
+
+
+## Plot 3: Faceted Line Graph of Genre Trends Across Ages
+
+```{r plot3-faceted-line-genre-age, fig.cap="Faceted line graph of genre rating trends across ages."}
+selected_genres <- c("Drama", "Action", "Romance", "Sci-Fi", "Fantasy", "Children's", "War", "Documentary", "Animation", "Horror")
+
+age_genre_trends <- merged_data %>%
+  pivot_longer(cols=all_of(genres), names_to="genre", values_to="flag") %>%
+  filter(flag==1) %>%
+  group_by(age, genre) %>%
+  summarize(mean_rating=mean(rating), .groups="drop")
+
+ggplot(age_genre_trends, aes(x=age, y=mean_rating, color=genre)) +
+  geom_point(alpha=0.6) +
+  geom_smooth(method="loess", se=TRUE) +
+  facet_wrap(~genre, scales="free_y") +
+  labs(title="Genre-Specific Rating Trends Across Ages",
+       x="Age",
+       y="Mean Rating") +
+  theme_minimal() +
+  theme(legend.position="none")
+
+```
+
+Here, each panel represents a single genre, plotting average ratings by age with points and a LOESS curve. We see distinct patterns in some categories, while others seem to show no differences by age. Certain genres like crime, drama, fantasy, and film-noir grow as age increase. While others like horror seem to decrease as age increases. Furthermore, some genres like documentaries, fantasies, and westerns either will show a peak or through in the middle ages.
+
+
+## Plot 4: Heatmap of Genre Preferences by Gender and Occupation
+
+```{r plot4-heatmap-gender-occ, fig.cap="Heatmap of genre preferences by gender and occupation."}
+genres <- c("Action", "Adventure", "Animation", "Children's", "Comedy", "Crime", 
+            "Documentary", "Drama", "Fantasy", "Film-Noir", "Horror", "Musical", 
+            "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western")
+
+gender_occ_genre <- merged_data %>%
+  pivot_longer(cols = all_of(genres), names_to="genre", values_to="flag") %>%
+  filter(flag == 1) %>%
+  group_by(gender, occupation, genre) %>%
+  summarize(mean_rating = mean(rating), .groups="drop")
+
+ggplot(gender_occ_genre, aes(x=occupation, y=genre, fill=mean_rating)) +
+  geom_tile(color="white") +
+  scale_fill_viridis_c(option="plasma", na.value="grey50") +
+  labs(title="Genre Preferences by Gender and Occupation",
+       x="Occupation",
+       y="Genre",
+       fill="Avg. Rating") +
+  facet_wrap(~gender, ncol=1, scales="free_x") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle=90, hjust=1, size=6),
+        axis.text.y = element_text(size=7),
+        strip.text = element_text(size=10))
+
+```
+
+This heatmap focuses on how gender and occupation interact to shape genre ratings. Occupations (x-axis) are diverse (e.g., students, engineers, librarians, programmers), and each cell shows the average rating for a particular genre (y-axis). If certain occupations cluster around high ratings for intellectual genres (e.g., Documentary, Film-Noir), or lighter entertainment (e.g., Comedy, Animation), that suggests professional or cultural backgrounds play a role in taste formation. Gender differences per occupation add another layer: for instance, a genre might be consistently rated higher by females in academically inclined occupations, or males in more technical fields. For example, females in the healthcare field rate rate all movies lower, regardless of their genre. This does not hold true for men in healthcare field. On the other hand, we see men who identified profession as "none", rate all genres on average higher than other professions.
+
+
+## Plot 5: Top-Rated Movies by Gender
+
+```{r plot5-top-movies-gender, fig.cap="Top-rated movies by gender with error bars."}
+top_movies <- merged_data %>%
+  group_by(title) %>%
+  summarize(mean_rating=mean(rating), sd_rating=sd(rating), n=n(), .groups="drop") %>%
+  filter(n > 50) %>% 
+  slice_max(mean_rating, n=10) %>%
+  pull(title)
+
+top_movies_data <- merged_data %>%
+  filter(title %in% top_movies) %>%
+  group_by(gender, title) %>%
+  summarize(mean_rating=mean(rating), sd_rating=sd(rating), n=n(), .groups="drop") %>%
+  mutate(se=sd_rating/sqrt(n))
+
+ggplot(top_movies_data, aes(x=reorder(title, mean_rating), y=mean_rating, fill=gender)) +
+  geom_bar(stat="identity", position=position_dodge(width=0.7), color="black") +
+  geom_errorbar(aes(ymin=mean_rating-se, ymax=mean_rating+se), 
+                position=position_dodge(width=0.7), width=0.3) +
+  labs(title="Top-Rated Movies by Gender",
+       x="Movie Title",
+       y="Average Rating") +
+  coord_flip() +
+  theme_minimal()
+```
+
+This bar chart shows the top-rated movies overall, with separate bars for female and male mean ratings. Notably, most differences between genders are subtle, with overlapping error bars. Both genders highly rate canonical classics (e.g., Schindler’s List, Shawshank Redemption, Casablanca), indicating broad consensus on certain high-quality films. Minor differences (e.g., one gender slightly preferring a particular film) suggest nuances in taste but no drastic gender polarization for top-tier titles.
+
+## Plot 6: Rating Distribution for a Specific Movie by Gender
+
+```{r plot6-distribution-specific-movie, fig.cap="Rating distribution for 'Star Wars (1977)' by gender."}
+star_wars_data <- merged_data %>%
+  filter(title=="Star Wars (1977)")
+
+star_wars_counts <- star_wars_data %>%
+  group_by(gender, rating) %>%
+  summarize(count = n(), .groups="drop") %>%
+  group_by(gender) %>%
+  mutate(prop = count/sum(count))
+
+ggplot(star_wars_counts, aes(x=rating, y=prop, fill=gender)) +
+  geom_bar(stat="identity", position="dodge", color="black") +
+  scale_y_continuous(labels=scales::percent_format()) +
+  labs(title="Rating Distribution for 'Star Wars (1977)' by Gender",
+       x="Rating",
+       y="Percentage") +
+  theme_minimal()
+
+```
+
+This bar chart displays the percentage of male and female users giving each rating to Star Wars (1977). A prominent takeaway is that the film is well-regarded by both genders, with a large share of 4 and 5 ratings. Males show a relatively high amount of 5 star ratings, while Females demonstrate a relatively higher proportion of 3 star ratings. 
+
+
+## Summary of Findings
+
+- **Age Differences:** The analyses indicate that viewers’ genre preferences shift subtly as they age. Younger audiences show relatively higher appreciation for certain genres like horror and western films, while older viewers appear to rate genres such as fantasy and crime more favorably. Although these differences are not dramatically pronounced, they suggest that age can play a meaningful, if nuanced, role in shaping viewers’ cinematic tastes.
+- **Gender Differences:** Although gender differences in overall ratings are often modest, patterns emerge in genre-specific and movie-specific contexts. Women and men largely agree on many top films, but the distribution of very high ratings or preferences for certain genres can differ. Gender comparisons highlight subtle biases or leanings that can become relevant when catering to diverse audience segments.
+- **Occupation Differences:**  Professional background correlates with genre preferences. Certain occupations show distinct patterns, possibly reflecting cultural, educational, or lifestyle factors that influence taste. These findings highlight that entertainment preferences are shaped not only by who we are demographically but also by the environments we engage in professionally.
+
+Together, these results stress the importance of demographic awareness in movie recommendation systems, marketing strategies, and content development to accommodate a range of tastes and avoid one-size-fits-all approaches.
+
+
+# Discussion
+
+When examining how preferences evolve across the lifespan, our findings reveal that age-related differences do not represent a simple linear progression of tastes but rather a subtle reshaping of genre affinities. The data suggest that younger viewers are more inclined toward the immediate thrills or distinctive storytelling found in horror and western films, whereas older audiences gravitate slightly toward the narrative complexity or thematic depth present in fantasy and crime. These shifts might reflect changes in cultural exposure, life experience, or generational familiarity with certain genre conventions.
+
+Gender-based differences, while not always pronounced, still matter. Subtle variations in rating distributions and top-film preferences suggest that even widely beloved movies can evoke slightly different responses along gender lines. These differences might be rooted in socialization processes, media representations, and cultural norms influencing how men and women relate to certain narratives and genres.
+
+Occupation-related disparities underscore that movie taste is influenced not only by personal demographics but also by cultural and social contexts. Educational, professional, and social frameworks shape exposure to and appreciation of various film types, from documentaries and international cinema to comedies and blockbusters.
+
+These insights carry practical implications. Recommender systems that integrate demographic signals can better align content suggestions with audience segments, potentially increasing satisfaction and engagement. Marketers and filmmakers can tailor their outreach and content creation to address these nuanced preferences, fostering inclusivity and resonance. Overall, understanding how age, gender, and occupation inform taste can help the film industry navigate a diverse, evolving audience landscape, leading to richer, more meaningful cinematic experiences. Future research should incorporate more diverse and contemporary datasets, non-binary gender options, and additional cultural or socioeconomic factors.
+
+# References
+
+::: {#refs}
+:::
+```

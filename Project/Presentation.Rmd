@@ -1,0 +1,105 @@
+---
+title: "Demographic Insights on Film Ratings and Preferences"
+author: "Ash Munta"
+date: "2024-12-04"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+```{r load_data, include=FALSE}
+
+u_data <- read_delim("ml-100k/u.data", delim = "\t", 
+                     col_names = c("user_id", "movie_id", "rating", "timestamp"))
+u_user <- read_delim("ml-100k/u.user", delim = "|", 
+                     col_names = c("user_id", "age", "gender", "occupation", "zip_code"))
+u_item <- read_delim("ml-100k/u.item", delim = "|", 
+                     col_names = c("movie_id", "title", "release_date", "video_release_date",
+                                   "IMDb_URL", "unknown", "Action", "Adventure", "Animation", 
+                                   "Children's", "Comedy", "Crime", "Documentary", "Drama", 
+                                   "Fantasy", "Film-Noir", "Horror", "Musical", "Mystery", 
+                                   "Romance", "Sci-Fi", "Thriller", "War", "Western"))
+
+```
+
+```{r merge_data,  include=FALSE}
+merged_data <- u_data %>%
+  inner_join(u_user, by = "user_id") %>%
+  inner_join(u_item, by = "movie_id")
+
+(merged_data)
+```
+
+
+## Research Questions
+
+**Big Research Question:**
+
+How do demographic factors like age, gender, and occupation influence movie ratings and genre preferences?
+
+**Little Research Question:**
+
+Do users from different age groups, genders, and occupations rate movies differently on average, and do they have distinct genre preferences?
+
+## Method and Data Source
+
+### Dataset Source:
+- **The MovieLens 100k dataset**, collected by the **GroupLens Research Project** at the University of Minnesota.
+- MovieLens was an **online platform** where users could rate movies and receive recommendations.
+- Data Collection from **September 19, 1997**, to **April 22, 1998**.
+
+### Data:
+- 943 users provided demographic information (**age**, **gender**, **occupation**, **zipcode**).
+- 100,000 ratings for 1,682 movies spanning various genres.
+
+
+## Example Plot
+
+```{r plot_data, echo = FALSE}
+age_grouped_data <- merged_data %>%
+  mutate(age_group = case_when(
+    age < 18 ~ "Under 18",
+    age >= 18 & age < 30 ~ "18-29",
+    age >= 30 & age < 50 ~ "30-49",
+    age >= 50 ~ "50+"
+  ))
+
+fantasy_ratings <- age_grouped_data %>%
+  filter(Fantasy == 1) %>%  
+  group_by(age_group) %>%  
+  summarize(
+    avg_rating = mean(rating, na.rm = TRUE),  
+    count = n(),  
+    .groups = "drop"
+  )
+
+fantasy_ratings <- fantasy_ratings %>%
+  mutate(age_group = factor(age_group, levels = c("Under 18", "18-29", "30-49", "50+")))
+
+```
+
+
+
+```{r plot}
+ggplot(fantasy_ratings, aes(x = age_group, y = avg_rating, fill = age_group)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    breaks = seq(1, 5, 0.5) 
+  ) +
+  labs(
+    title = "Average Ratings for Fantasy Movies by Age Group",
+    x = "Age Group",
+    y = "Average Rating"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r}
+getwd()
+```
+
+
